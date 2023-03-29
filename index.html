@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+		<script src="./api.js" defer></script>
+		<script src="./components/cart.js"></script>
+		<script src="./index.js" defer></script>
+		<link rel="stylesheet" href="./style.css" />
+	</head>
+	<body>
+		<div id="homepage">
+			<header>
+				<button id="add-cat">Добавить котика</button>
+			</header>
+			<div class="content"></div>
+			<div class="create-edit-modal-form">
+				<form action="">
+					<input name = "id" placeholder = "ID" required />
+					<input name = "name" placeholder="Имя" required />
+					<input name = "image" placeholder="Ссылка на изображение" required />
+					<input name = "age" type="number" placeholder="Возраст" required />
+					<input name = "rate" type="number" placeholder="Рейтинг" required />
+					<textarea
+						name="description"
+						rows="3"
+						placeholder="Описание"
+						required
+					></textarea>
+					<button type="submit">Ok</button>
+					<button id="close-form">Close</button>
+				</form>
+			</div>
+		</div>
+	</body>
+</html>
