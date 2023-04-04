@@ -3,6 +3,8 @@
 // Global BEGIN
 
 let localStorage = window.localStorage
+// сомнительное решение что бы использовать одну форму для добавление и изменения котиков. по сути, это флаг.
+let modalFormShowButton = null
 
 // Global END
 
@@ -22,10 +24,15 @@ const closeModalFormButton = document.getElementById('close-form');
 // EventListeners BEGIN
 
 addCatButton.addEventListener('click', (event) => {
+	cleanModalForm()
 	modalFormDiv.classList.add('active')
-	console.log(event.target.value)
+	modalFormShowButton = 'addCat' // если форма активирована кнопкой "Добавить котика".
 });
-closeModalFormButton.addEventListener('click', () => {modalFormDiv.classList.remove('active')});
+
+closeModalFormButton.addEventListener('click', () => {
+	cleanModalForm()
+	modalFormDiv.classList.remove('active')
+});
 
 content.addEventListener('click', (event) => {
 	if (event.target.tagName === 'BUTTON') {
@@ -39,11 +46,16 @@ content.addEventListener('click', (event) => {
 			case 'cat-card-update':
 				api.getCatById(event.target.value)
 					.then((res) => {
-
+						for (let i = 0; i < modalForm.elements.length; i++) {
+							modalForm.elements[i].value = Object.values(res)[i]
+						}
+						modalFormDiv.classList.add('active')
+						modalFormShowButton = 'updateCat' // если форма активирована кнопкой "Изменить".
 					})
 				break;
 			case 'cat-card-delete':
 				api.deleteCat(event.target.value).then(() => {
+					deleteCatFromLocalStorage(event.target.value)
 					refreshCatsAndContent();
 				})
 				break;
@@ -53,21 +65,22 @@ content.addEventListener('click', (event) => {
 
 modalForm.addEventListener('submit', (event) => {
 	event.preventDefault();
-	console.log(event.target)
 	const formData = new FormData(modalForm)
-	let cat = {
-		//TODO: перепилить на Object
-		id: formData.get('id'),
-		name: formData.get('name'),
-		image: formData.get('image'),
-		age: formData.get('age'),
-		rate: formData.get('rate'),
-		description: formData.get('description')
+	const cat = Object.fromEntries(formData.entries())
+	switch (modalFormShowButton) {
+		case 'addCat':
+			api.addCat({...cat, id: getNewIdOfCatLocal()}).then(() => {
+				alert("Котик добавлен! Ура!")
+				refreshCatsAndContent();
+			})
+			break;
+		case 'updateCat':
+			api.updateCat(cat).then(() => {
+				alert("Котик обновлен!")
+				refreshCatsAndContent();
+			})
 	}
-	api.addCat(cat).then(() => {
-		alert("Котик добавлен! Ура!")
-		refreshCatsAndContent();
-	})
+
 });
 
 // EventListeners END
@@ -131,6 +144,12 @@ const getNewIdOfCatLocal = () => {
 		return Math.max(...localCats.map((el) => el.id)) + 1
 	} else {
 		return 1
+	}
+}
+
+const cleanModalForm = () => {
+	for (const modalFormElement of modalForm.elements) {
+		modalFormElement.value = null
 	}
 }
 
