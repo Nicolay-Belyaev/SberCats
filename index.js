@@ -3,8 +3,8 @@
 // Global BEGIN
 
 let localStorage = window.localStorage
-// сомнительное решение что бы использовать одну форму для добавление и изменения котиков. по сути, это флаг.
-let modalFormShowButton = null
+localStorage.setItem('modalFormShowButton', '')
+
 
 // Global END
 
@@ -26,12 +26,13 @@ const closeModalFormButton = document.getElementById('close-form');
 addCatButton.addEventListener('click', (event) => {
 	cleanModalForm()
 	modalFormDiv.classList.add('active')
-	modalFormShowButton = 'addCat' // если форма активирована кнопкой "Добавить котика".
+	localStorage.setItem('modalFormShowButton', 'addCat') // если форма активирована кнопкой "Добавить котика".
 });
 
 closeModalFormButton.addEventListener('click', () => {
 	cleanModalForm()
 	modalFormDiv.classList.remove('active')
+	localStorage.setItem('modalFormShowButton', '')
 });
 
 content.addEventListener('click', (event) => {
@@ -50,12 +51,11 @@ content.addEventListener('click', (event) => {
 							modalForm.elements[i].value = Object.values(res)[i]
 						}
 						modalFormDiv.classList.add('active')
-						modalFormShowButton = 'updateCat' // если форма активирована кнопкой "Изменить".
+						localStorage.setItem('modalFormShowButton', 'updateCat') // если форма активирована кнопкой "Изменить".
 					})
 				break;
 			case 'cat-card-delete':
 				api.deleteCat(event.target.value).then(() => {
-					deleteCatFromLocalStorage(event.target.value)
 					refreshCatsAndContent();
 				})
 				break;
@@ -67,11 +67,12 @@ modalForm.addEventListener('submit', (event) => {
 	event.preventDefault();
 	const formData = new FormData(modalForm)
 	const cat = Object.fromEntries(formData.entries())
-	switch (modalFormShowButton) {
+	switch (String(localStorage.getItem('modalFormShowButton'))) {
 		case 'addCat':
-			api.addCat({...cat, id: getNewIdOfCatLocal()}).then(() => {
+			api.addCat(cat).then(() => {
+				addCatInLocalStorage(cat)
 				alert("Котик добавлен! Ура!")
-				refreshCatsAndContent();
+				refreshCatsAndContentLocal();
 			})
 			break;
 		case 'updateCat':
@@ -115,18 +116,38 @@ const openCatCardPopup = (cat) => {
 const refreshCatsAndContentLocal = () => {
 	const content = document.getElementsByClassName('content')[0];
 	content.innerHTML = '';
-
-	const cards = JSON.parse(localStorage.getItem('cats')).reduce(
-		(acc, el) => (acc += generateCard(el))
-	)
-	content.insertAdjacentHTML('afterbegin', cards)
+	const cards = JSON.parse(localStorage.getItem('cats'))
+	console.log(cards)
+	if (cards.length) {
+		content.insertAdjacentHTML('afterbegin', cards.reduce((acc, el) => (acc += generateCard(el))))
+	} else {
+		content.insertAdjacentHTML('afterbegin', generateCard(cards))
+	}
 }
 
+// все сложность у нас тут потому что JSON.parse() в зависимост от того, что получил на вход, выдает разные
+// результаты: Object, Array или value.
 const addCatInLocalStorage = (cat) => {
-	localStorage.setItem(
-		'cats',
-		JSON.stringify([...JSON.parse(localStorage.getItem('cats')), cat])
-	)
+	let localCat = localStorage.getItem('cats')
+	// если у нас не было котиков, то мы пишем в строку value нового котика
+	if (!localCat) {
+		localStorage.setItem(
+			'cats',
+			JSON.stringify([cat]))
+	// если у нас есть один котик, нам надо взять имеющегося в localStorage котика и нового котика.
+	// JSON.parse() вернет нам Object-котика у которого нет свойства length
+	} else if (!JSON.parse(localCat).length) {
+		localStorage.setItem(
+			'cats',
+			JSON.stringify([localCat, cat])
+		)
+	// если у нас есть много котиков, нам надо взять котиков из localStorage и проспредить их, а потом добавить котика
+	// JSON.parse() вернет нам Array из Object'ов-котиков.
+	} else {
+		localStorage.setItem(
+			'cats',
+			JSON.stringify([...JSON.parse(localStorage.getItem('cats')), cat]))
+	}
 }
 
 const deleteCatFromLocalStorage = (catId) => {
@@ -155,4 +176,4 @@ const cleanModalForm = () => {
 
 // localStorage functions END
 
-refreshCatsAndContent();
+refreshCatsAndContentLocal();
