@@ -56,7 +56,9 @@ content.addEventListener('click', (event) => {
 				break;
 			case 'cat-card-delete':
 				api.deleteCat(event.target.value).then(() => {
-					refreshCatsAndContent();
+					deleteCatFromLocalStorage(event.target.valueOf())
+					alert("Котик удален!")
+					refreshCatsAndContentLocal();
 				})
 				break;
 		}
@@ -117,37 +119,21 @@ const refreshCatsAndContentLocal = () => {
 	const content = document.getElementsByClassName('content')[0];
 	content.innerHTML = '';
 	const cards = JSON.parse(localStorage.getItem('cats'))
-	console.log(cards)
-	if (cards.length) {
-		content.insertAdjacentHTML('afterbegin', cards.reduce((acc, el) => (acc += generateCard(el))))
-	} else {
-		content.insertAdjacentHTML('afterbegin', generateCard(cards))
-	}
+	content.insertAdjacentHTML('afterbegin',
+		cards.reduce((acc, el) => acc + generateCard(el), ''))
 }
 
-// все сложность у нас тут потому что JSON.parse() в зависимост от того, что получил на вход, выдает разные
-// результаты: Object, Array или value.
 const addCatInLocalStorage = (cat) => {
 	let localCat = localStorage.getItem('cats')
-	// если у нас не было котиков, то мы пишем в строку value нового котика
 	if (!localCat) {
 		localStorage.setItem(
 			'cats',
 			JSON.stringify([cat]))
-	// если у нас есть один котик, нам надо взять имеющегося в localStorage котика и нового котика.
-	// JSON.parse() вернет нам Object-котика у которого нет свойства length
-	} else if (!JSON.parse(localCat).length) {
-		localStorage.setItem(
-			'cats',
-			JSON.stringify([localCat, cat])
-		)
-	// если у нас есть много котиков, нам надо взять котиков из localStorage и проспредить их, а потом добавить котика
-	// JSON.parse() вернет нам Array из Object'ов-котиков.
 	} else {
 		localStorage.setItem(
 			'cats',
-			JSON.stringify([...JSON.parse(localStorage.getItem('cats')), cat]))
-	}
+			JSON.stringify([...JSON.parse(localStorage.getItem('cats')), cat])
+		)}
 }
 
 const deleteCatFromLocalStorage = (catId) => {
