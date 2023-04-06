@@ -6,6 +6,9 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Document</title>
 		<script src="./api.js" defer></script>
+		<script src="./CRUD.js" defer></script>
+		<script src="components/getNewIDofCat.js" defer></script>
+		<script src="components/cleanModalForm.js" defer></script>
 		<script src="components/generateCard.js"></script>
 		<script src="components/generateCatPopup.js"></script>
 		<script src="./index.js" defer></script>
@@ -20,7 +23,7 @@
 			<div class="create-edit-modal-form">
 				<form action="">
 					<label for="id">Номер котика:</label>
-					<input name="id" id="id" placeholder = "ID" required />
+					<input name="id" id="id" placeholder = "ID" required readonly/>
 
 					<label for="name">Имя котика:</label>
 					<input name="name" id="name" placeholder="Имя" required />
@@ -46,6 +49,7 @@
 					<button type="submit">Ok</button>
 					<button id="close-form">Close</button>
 				</form>
+			</div>
 		</div>
 	</body>
 </html>
