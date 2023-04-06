@@ -1,29 +1,23 @@
 // не очень понимаю, как следует структурировать код, но пусть будет как-то так.
 
 // Global BEGIN
-
 let localStorage = window.localStorage
 localStorage.setItem('modalFormShowButton', '')
-
-
 // Global END
 
 
 // HTML BEGIN
-
 const modalFormDiv = document.getElementsByClassName('create-edit-modal-form')[0];
 const modalForm = document.forms[0];
 const content = document.getElementsByClassName('content')[0];
 
 const addCatButton = document.getElementById('add-cat');
 const closeModalFormButton = document.getElementById('close-form');
-
 // HTML END
 
 
 // EventListeners BEGIN
-
-addCatButton.addEventListener('click', (event) => {
+addCatButton.addEventListener('click', () => {
 	cleanModalForm()
 	modalFormDiv.classList.add('active')
 	localStorage.setItem('modalFormShowButton', 'addCat') // если форма активирована кнопкой "Добавить котика".
@@ -56,7 +50,7 @@ content.addEventListener('click', (event) => {
 				break;
 			case 'cat-card-delete':
 				api.deleteCat(event.target.value).then(() => {
-					deleteCatFromLocalStorage(event.target.valueOf())
+					deleteCatFromLocalStorage(event.target.value)
 					alert("Котик удален!")
 					refreshCatsAndContentLocal();
 				})
@@ -79,42 +73,15 @@ modalForm.addEventListener('submit', (event) => {
 			break;
 		case 'updateCat':
 			api.updateCat(cat).then(() => {
+				updateCatInLocalStorage(cat)
 				alert("Котик обновлен!")
-				refreshCatsAndContent();
+				refreshCatsAndContentLocal();
 			})
 	}
-
 });
-
 // EventListeners END
 
-// async functions BEGIN
-
-const refreshCatsAndContent = () => {
-	const content = document.getElementsByClassName('content')[0];
-	content.innerHTML = '';
-
-	api.getAllCats().then((res) => {
-		const cards = res.reduce((acc, el) => (acc += generateCard(el)), '');
-		content.insertAdjacentHTML('afterbegin', cards);
-	});
-};
-
-const openCatCardPopup = (cat) => {
-	const content = document.getElementsByClassName('content')[0]
-	content.insertAdjacentHTML('afterbegin', generateCatPopup(cat))
-
-	let catPopup = document.querySelector('.popup-wrapper-cat-card');
-	let closePopup = document.querySelector('.popup-close-cat-card');
-	closePopup.addEventListener('click', () => {
-		catPopup.remove()
-	})
-}
-
-// async functions END
-
 // localStorage functions BEGIN
-
 const refreshCatsAndContentLocal = () => {
 	const content = document.getElementsByClassName('content')[0];
 	content.innerHTML = '';
@@ -139,9 +106,16 @@ const addCatInLocalStorage = (cat) => {
 const deleteCatFromLocalStorage = (catId) => {
 	localStorage.setItem(
 		'cats',
-		JSON.stringify(
-			JSON.parse(localStorage.getItem('cats')).filter((el) => el.id != catId)
-		)
+		JSON.stringify(JSON.parse(localStorage.getItem('cats')).filter((el) => el.id != catId))
+	)
+}
+
+const updateCatInLocalStorage = (cat) => {
+	let localCats = JSON.parse(localStorage.getItem('cats'))
+	localCats[cat.id - 1] = cat
+	localStorage.setItem(
+		'cats',
+		JSON.stringify(localCats)
 	)
 }
 
@@ -154,12 +128,22 @@ const getNewIdOfCatLocal = () => {
 	}
 }
 
+const openCatCardPopup = (cat) => {
+	const content = document.getElementsByClassName('content')[0]
+	content.insertAdjacentHTML('afterbegin', generateCatPopup(cat))
+
+	let catPopup = document.querySelector('.popup-wrapper-cat-card');
+	let closePopup = document.querySelector('.popup-close-cat-card');
+	closePopup.addEventListener('click', () => {
+		catPopup.remove()
+	})
+}
+
 const cleanModalForm = () => {
 	for (const modalFormElement of modalForm.elements) {
 		modalFormElement.value = null
 	}
 }
-
 // localStorage functions END
 
 refreshCatsAndContentLocal();
