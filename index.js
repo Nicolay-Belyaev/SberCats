@@ -3,6 +3,11 @@
 // Global BEGIN
 let localStorage = window.localStorage
 localStorage.setItem('modalFormShowButton', '')
+if (localStorage.getItem('cats') == null) {
+	localStorage.setItem('cats', '[]')
+}
+
+
 // Global END
 
 // HTML BEGIN

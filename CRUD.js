@@ -23,7 +23,11 @@ const openCatCardPopup = (cat) => {
 }
 const updateCatInLocalStorage = (cat) => {
     let localCats = JSON.parse(localStorage.getItem('cats'))
-    localCats[cat.id - 1] = cat
+    for (let i = 0; i < localCats.length; i++) {
+        if (localCats[i].id == cat.id) {
+            localCats[i] = cat
+        }
+    }
     localStorage.setItem(
         'cats',
         JSON.stringify(localCats)
